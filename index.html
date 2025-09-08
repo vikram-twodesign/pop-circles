@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Spheres</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #fefefe 0%, #f8f9fa 100%);
+            overflow: hidden;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        .container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            aspect-ratio: 16/9;
+            max-width: 100%;
+            max-height: 100vh;
+            margin: 0 auto;
+            cursor: none;
+            perspective: 1000px;
+        }
+
+        .sphere {
+            position: absolute;
+            width: 450px;
+            height: 450px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            cursor: pointer;
+            transition: all 0.8s cubic-bezier(0.165, 0.84, 0.44, 1);
+            transform-style: preserve-3d;
+            will-change: transform, filter;
+        }
+
+        .sphere:not(.active):not(.inactive):hover {
+            transform: scale(1.08) !important;
+            filter: brightness(1.02);
+            transition: transform 0.8s cubic-bezier(0.165, 0.84, 0.44, 1), filter 0.8s cubic-bezier(0.165, 0.84, 0.44, 1);
+            animation-play-state: paused;
+        }
+
+        .sphere1 {
+            background-image: url('./assets/sphere1.png');
+            top: 5%;
+            left: -5%;
+            animation: float1 20s ease-in-out infinite;
+        }
+
+        .sphere2 {
+            background-image: url('./assets/sphere2.png');
+            top: 8%;
+            right: -8%;
+            animation: float2 24s ease-in-out infinite 3s;
+        }
+
+        .sphere3 {
+            background-image: url('./assets/sphere3.png');
+            bottom: 5%;
+            left: 25%;
+            animation: float3 28s ease-in-out infinite 6s;
+        }
+
+        @keyframes float1 {
+            0% { transform: translate(0, 0) rotate(0deg); }
+            25% { transform: translate(50px, -30px) rotate(1deg); }
+            50% { transform: translate(-40px, -60px) rotate(2deg); }
+            75% { transform: translate(30px, -20px) rotate(-0.5deg); }
+            100% { transform: translate(0, 0) rotate(0deg); }
+        }
+
+        @keyframes float2 {
+            0% { transform: translate(0, 0) rotate(0deg); }
+            25% { transform: translate(-60px, 20px) rotate(-1deg); }
+            50% { transform: translate(40px, -40px) rotate(-2deg); }
+            75% { transform: translate(-30px, 30px) rotate(1.5deg); }
+            100% { transform: translate(0, 0) rotate(0deg); }
+        }
+
+        @keyframes float3 {
+            0% { transform: translate(0, 0) rotate(0deg); }
+            25% { transform: translate(70px, 40px) rotate(0.5deg); }
+            50% { transform: translate(-50px, -30px) rotate(1.5deg); }
+            75% { transform: translate(20px, 50px) rotate(-1deg); }
+            100% { transform: translate(0, 0) rotate(0deg); }
+        }
+
+        .sphere.active {
+            transform: scale(2.2) translateZ(100px);
+            top: calc(50% - 225px);
+            left: calc(50% - 225px);
+            z-index: 10;
+            animation: none;
+            transition: all 1.8s cubic-bezier(0.165, 0.84, 0.44, 1);
+        }
+
+        .sphere.inactive {
+            transform: scale(0.6) translateZ(-50px) !important;
+            filter: blur(3px);
+            opacity: 0.4;
+            z-index: 1;
+            animation: none !important;
+            transition: all 1.8s cubic-bezier(0.165, 0.84, 0.44, 1) !important;
+        }
+
+        .text-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(5px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            z-index: 15;
+            transition: opacity 0.6s ease-in-out;
+            pointer-events: none;
+        }
+        
+        .text-content {
+            color: #333;
+            font-size: 22px;
+            font-weight: 400;
+            text-align: center;
+            max-width: 500px;
+            line-height: 1.6;
+            padding: 0 40px;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: opacity 0.4s ease-out 0.2s, transform 0.4s ease-out 0.2s;
+        }
+        
+        .text-content.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .text-overlay.visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .cursor {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 20;
+            transition: transform 0.1s ease-out;
+            transform: translate(-50%, -50%);
+            backdrop-filter: blur(2px);
+        }
+
+        .container.active-state {
+            cursor: default;
+        }
+
+        .sphere.active:hover {
+            transform: scale(2.2) translateZ(100px) !important;
+        }
+
+        @media (max-width: 768px) {
+            .sphere {
+                width: 280px;
+                height: 280px;
+            }
+            .text-overlay {
+                font-size: 18px;
+                padding: 20px 30px;
+                max-width: 320px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container" id="container">
+        <div class="sphere sphere1" data-sphere="1"></div>
+        <div class="sphere sphere2" data-sphere="2"></div>
+        <div class="sphere sphere3" data-sphere="3"></div>
+        <div class="text-overlay" id="textOverlay">
+            <div class="text-content" id="textContent"></div>
+        </div>
+        <div class="cursor" id="cursor"></div>
+    </div>
+
+    <script>
+        class InteractiveSpheres {
+            constructor() {
+                this.container = document.getElementById('container');
+                this.spheres = document.querySelectorAll('.sphere');
+                this.textOverlay = document.getElementById('textOverlay');
+                this.textContent = document.getElementById('textContent');
+                this.cursor = document.getElementById('cursor');
+                this.activeSphere = null;
+                
+                this.sphereTexts = {
+                    '1': 'Lorem ipsum dolor sit amet, consectetur adipiscing elit sed do eiusmod.',
+                    '2': 'Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium.',
+                    '3': 'At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis.'
+                };
+                
+                this.init();
+            }
+
+            init() {
+                this.setupEventListeners();
+                this.setupCursor();
+            }
+
+            setupEventListeners() {
+                this.spheres.forEach(sphere => {
+                    sphere.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        this.activateSphere(sphere);
+                    });
+                });
+
+                this.container.addEventListener('click', (e) => {
+                    if (this.activeSphere && !e.target.classList.contains('sphere')) {
+                        this.deactivateAll();
+                    }
+                });
+
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'Escape' && this.activeSphere) {
+                        this.deactivateAll();
+                    }
+                });
+            }
+
+            setupCursor() {
+                this.container.addEventListener('mousemove', (e) => {
+                    const rect = this.container.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    
+                    requestAnimationFrame(() => {
+                        this.cursor.style.left = x + 'px';
+                        this.cursor.style.top = y + 'px';
+                    });
+                });
+
+                this.container.addEventListener('mouseenter', () => {
+                    this.cursor.style.opacity = '1';
+                });
+
+                this.container.addEventListener('mouseleave', () => {
+                    this.cursor.style.opacity = '0';
+                });
+            }
+
+            activateSphere(targetSphere) {
+                if (this.activeSphere) return;
+                
+                this.activeSphere = targetSphere;
+                this.container.classList.add('active-state');
+                
+                this.spheres.forEach(sphere => {
+                    if (sphere === targetSphere) {
+                        sphere.classList.add('active');
+                    } else {
+                        sphere.classList.add('inactive');
+                    }
+                });
+
+                // Start overlay at 60% of sphere transition to sync completion
+                setTimeout(() => {
+                    this.textOverlay.classList.add('visible');
+                }, 1080); // 60% of 1.8s sphere transition
+                
+                // Show text after overlay is fully visible
+                setTimeout(() => {
+                    const sphereNumber = targetSphere.dataset.sphere;
+                    this.textContent.textContent = this.sphereTexts[sphereNumber];
+                    this.textContent.classList.add('visible');
+                }, 1680); // 1080ms + 600ms overlay transition
+            }
+
+            deactivateAll() {
+                if (!this.activeSphere) return;
+                
+                this.textContent.classList.remove('visible');
+                this.textOverlay.classList.remove('visible');
+                
+                setTimeout(() => {
+                    this.spheres.forEach(sphere => {
+                        sphere.classList.remove('active', 'inactive');
+                    });
+                    
+                    this.container.classList.remove('active-state');
+                    this.activeSphere = null;
+                }, 600); // Match overlay transition time
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            new InteractiveSpheres();
+        });
+    </script>
+</body>
+</html>
