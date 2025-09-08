@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Interactive Spheres</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&family=Instrument+Serif:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600;1,700&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -31,8 +34,8 @@
 
         .sphere {
             position: absolute;
-            width: 450px;
-            height: 450px;
+            width: 550px;
+            height: 550px;
             background-size: contain;
             background-repeat: no-repeat;
             background-position: center;
@@ -45,7 +48,7 @@
         .sphere:not(.active):not(.inactive):hover {
             transform: scale(1.08) !important;
             filter: brightness(1.02);
-            transition: transform 0.8s cubic-bezier(0.165, 0.84, 0.44, 1), filter 0.8s cubic-bezier(0.165, 0.84, 0.44, 1);
+            transition: transform 1.2s cubic-bezier(0.23, 1, 0.32, 1), filter 1.2s cubic-bezier(0.23, 1, 0.32, 1);
             animation-play-state: paused;
         }
 
@@ -95,9 +98,9 @@
         }
 
         .sphere.active {
-            transform: scale(2.2) translateZ(100px);
-            top: calc(50% - 225px);
-            left: calc(50% - 225px);
+            transform: scale(2.0) translateZ(100px);
+            top: calc(50% - 275px);
+            left: calc(50% - 275px);
             z-index: 10;
             animation: none;
             transition: all 1.8s cubic-bezier(0.165, 0.84, 0.44, 1);
@@ -131,15 +134,52 @@
         
         .text-content {
             color: #333;
-            font-size: 22px;
-            font-weight: 400;
             text-align: center;
-            max-width: 500px;
-            line-height: 1.6;
+            max-width: 600px;
+            max-height: 600px;
             padding: 0 40px;
             opacity: 0;
             transform: translateY(10px);
             transition: opacity 0.4s ease-out 0.2s, transform 0.4s ease-out 0.2s;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .text-content .title {
+            font-family: 'Instrument Serif', serif;
+            font-weight: 700;
+            font-size: 48px;
+            margin-bottom: 40px;
+            display: block;
+            z-index: 2;
+            position: relative;
+            padding: 20px 40px;
+        }
+
+        .floating-words {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+        }
+
+        .floating-word {
+            position: absolute;
+            font-family: 'Instrument Sans', sans-serif;
+            font-size: 18px;
+            font-weight: 400;
+            color: #555;
+            opacity: 0;
+            transition: all 0.6s ease-out;
+            white-space: nowrap;
+        }
+
+        .floating-word.visible {
+            opacity: 1;
         }
         
         .text-content.visible {
@@ -170,13 +210,13 @@
         }
 
         .sphere.active:hover {
-            transform: scale(2.2) translateZ(100px) !important;
+            transform: scale(2.0) translateZ(100px) !important;
         }
 
         @media (max-width: 768px) {
             .sphere {
-                width: 280px;
-                height: 280px;
+                width: 350px;
+                height: 350px;
             }
             .text-overlay {
                 font-size: 18px;
@@ -208,9 +248,18 @@
                 this.activeSphere = null;
                 
                 this.sphereTexts = {
-                    '1': 'Lorem ipsum dolor sit amet, consectetur adipiscing elit sed do eiusmod.',
-                    '2': 'Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium.',
-                    '3': 'At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis.'
+                    '1': {
+                        title: 'Business',
+                        words: ['budgeting', 'scoping', 'negotiation', 'contract management', 'systems/process architecture', 'change management', 'funder relations']
+                    },
+                    '2': {
+                        title: 'Sustainability',
+                        words: ['circular economy', 'carbon sequestration', 'plastics', 'built environment', 'materials management', 'green chemistry']
+                    },
+                    '3': {
+                        title: 'Creative',
+                        words: ['audience research', 'brand identity', 'content strategy', 'creative direction', 'cross-functional team management']
+                    }
                 };
                 
                 this.init();
@@ -285,9 +334,56 @@
                 // Show text after overlay is fully visible
                 setTimeout(() => {
                     const sphereNumber = targetSphere.dataset.sphere;
-                    this.textContent.textContent = this.sphereTexts[sphereNumber];
+                    this.showFloatingText(sphereNumber);
                     this.textContent.classList.add('visible');
                 }, 1680); // 1080ms + 600ms overlay transition
+            }
+
+            showFloatingText(sphereNumber) {
+                const data = this.sphereTexts[sphereNumber];
+                
+                // Clear previous content
+                this.textContent.innerHTML = '';
+                
+                // Add title
+                const titleElement = document.createElement('div');
+                titleElement.className = 'title';
+                titleElement.textContent = data.title;
+                this.textContent.appendChild(titleElement);
+                
+                // Add floating words container
+                const floatingContainer = document.createElement('div');
+                floatingContainer.className = 'floating-words';
+                this.textContent.appendChild(floatingContainer);
+                
+                // Position words in a circular pattern around the title
+                data.words.forEach((word, index) => {
+                    const wordElement = document.createElement('div');
+                    wordElement.className = 'floating-word';
+                    wordElement.textContent = word;
+                    
+                    // Calculate position in a circular pattern with larger minimum radius to avoid title
+                    const angle = (index / data.words.length) * 2 * Math.PI;
+                    const minRadius = 180; // Increased minimum radius to clear the title area
+                    const radius = minRadius + Math.random() * 100; // Vary radius for more organic feel
+                    const x = Math.cos(angle) * radius;
+                    const y = Math.sin(angle) * radius;
+                    
+                    wordElement.style.left = `calc(50% + ${x}px)`;
+                    wordElement.style.top = `calc(50% + ${y}px)`;
+                    wordElement.style.transform = 'translate(-50%, -50%)';
+                    
+                    // Add slight rotation for more dynamic feel
+                    const rotation = (Math.random() - 0.5) * 20;
+                    wordElement.style.transform += ` rotate(${rotation}deg)`;
+                    
+                    floatingContainer.appendChild(wordElement);
+                    
+                    // Animate in with staggered timing
+                    setTimeout(() => {
+                        wordElement.classList.add('visible');
+                    }, 200 + index * 100);
+                });
             }
 
             deactivateAll() {
